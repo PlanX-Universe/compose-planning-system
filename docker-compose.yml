@@ -1,0 +1,93 @@
+version: "3.8"
+services:
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq
+    volumes:
+      - ./container_data/rabbitmq/etc/:/etc/rabbitmq/
+      - ./container_data/rabbitmq/data/:/var/lib/rabbitmq/
+      - ./container_data/rabbitmq/logs/:/var/log/rabbitmq/
+    environment:
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - planx
+
+  managing-service:
+    image: planx.toolbox.router.managing
+    container_name: managing-service
+    volumes:
+      - ./container_data/managing-service/logs/:/logs/
+    ports:
+      - "8090:8090"
+    depends_on:
+      - rabbitmq
+    networks:
+      - planx
+
+  solving-service-pddl4j:
+    image: planx.toolbox.endpoint.solving:pddl4j
+    container_name: solving-service-pddl4j
+    volumes:
+      - ./container_data/solving-service-pddl4j/logs/:/logs/
+    depends_on:
+      - rabbitmq
+    networks:
+      - planx
+
+  solving-service-pd:
+    image: planx.toolbox.endpoint.solving:pd
+    container_name: solving-service-pd
+    volumes:
+      - ./container_data/solving-service-pd/logs/:/logs/
+    depends_on:
+      - rabbitmq
+    networks:
+      - planx
+
+  parsing-service:
+    image: planx.toolbox.transforming.parsing
+    container_name: parsing-service
+    volumes:
+      - ./container_data/parsing-service/logs/:/logs/
+    depends_on:
+      - rabbitmq
+    networks:
+      - planx
+
+  converting-service:
+    image: planx.toolbox.transforming.converting
+    container_name: converting-service
+    volumes:
+      - ./container_data/converting-service/logs/:/logs/
+    depends_on:
+      - rabbitmq
+    networks:
+      - planx
+
+  plan-validation-service:
+    image: planx.toolbox.system-management.plan-validation
+    container_name: plan-validation-service
+    volumes:
+      - ./container_data/plan-validation-service/logs/:/logs/
+    depends_on:
+      - rabbitmq
+    networks:
+      - planx
+
+  frontend-service:
+    image: planx.toolbox.endpoint.modelling
+    container_name: frontend-service
+    depends_on:
+      - managing-service
+    ports:
+      - "4200:4200"
+    networks:
+      - planx
+
+networks:
+  planx:

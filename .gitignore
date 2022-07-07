@@ -1,0 +1,9 @@
+container_data/rabbitmq/data
+container_data/rabbitmq/logs
+
+container_data/converting-service/logs
+container_data/managing-service/logs
+container_data/parsing-service/logs
+container_data/solving-service/logs
+
+.DS_Store
